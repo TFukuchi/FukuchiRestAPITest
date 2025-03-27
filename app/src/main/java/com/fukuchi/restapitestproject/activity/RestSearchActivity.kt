@@ -53,7 +53,7 @@ class RestSearchActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize().padding(innerPadding)
                 )
 
-                // 初回Compose痔に一度だけ実行
+                // 初回Compose時に一度だけ実行
                 LaunchedEffect(Unit) {
                     showFragment()
                 }
