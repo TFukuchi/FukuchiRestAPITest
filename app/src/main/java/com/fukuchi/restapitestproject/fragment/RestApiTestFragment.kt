@@ -22,6 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -57,6 +61,12 @@ class RestApiTestFragment : Fragment() {
     @Composable
     fun RestApiSearchResultLayout() {
         val viewModel = hiltViewModel<RestApiTestViewModel>()
+        // 検索に使用する文言
+        var searchQuery by remember { mutableStateOf("") }
+        // 現在表示されている検索結果を表示するために使用した文言
+        // searchQueryをViewの表示するしないに使用すると、TextFieldの文言に変更があった場合、
+        // 表示されている検索結果が非表示になるためこのParamを用意
+        var currentSearchQuery by remember { mutableStateOf("")}
         // 検索実行中はProgressを表示
         if (viewModel.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -65,19 +75,20 @@ class RestApiTestFragment : Fragment() {
         } else {
             Column {
                 Row(modifier = Modifier.fillMaxWidth().padding(Dimens.SearchResultTextPadding)) {
-                    TextField(value = viewModel.searchQuery,
-                        onValueChange = { newValue -> viewModel.setQuery(newValue)},
+                    TextField(value = searchQuery,
+                        onValueChange = { newValue -> searchQuery = newValue},
                         label = { Text("検索ワード") },
                         modifier = Modifier.weight(1f).padding(end = Dimens.SearchTextFieldPaddingEnd))
                     Button(
-                        onClick = { viewModel.searchRepository() },
+                        onClick = { viewModel.searchRepository(searchQuery)
+                            currentSearchQuery = searchQuery},
                         enabled = true) {
                         Text("検索")
                     }
                 }
 
-                if (viewModel.currentSearchedQuery.isNotEmpty()) {
-                    Text("検索結果 [" + viewModel.currentSearchedQuery + "]"+ viewModel.repos.size + "件です。")
+                if (currentSearchQuery.isNotEmpty()) {
+                    Text("検索結果 [" + currentSearchQuery + "]"+ viewModel.repos.size + "件です。")
                     CompositionLocalProvider(LocalOverscrollConfiguration provides null) {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
                             items(viewModel.repos) { repo : SearchRepositoriesResponseItem->
